@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Three.js Validator Particles (Hashpower Test)</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #05060a; overflow: hidden; }
+      #ui {
+        position: absolute; left: 12px; top: 12px;
+        padding: 10px 12px; border-radius: 10px;
+        background: rgba(10,12,18,0.72); color: #e9ecff;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+        font-size: 13px; user-select: none; backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.08);
+        width: 260px;
+      }
+      #ui label { display: block; margin-bottom: 6px; opacity: 0.9; }
+      #ui input[type="range"] { width: 100%; }
+      #stats { margin-top: 8px; opacity: 0.85; line-height: 1.35; }
+      #hint { margin-top: 8px; opacity: 0.7; font-size: 12px; }
+      canvas { display: block; }
+    </style>
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/examples/jsm/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+          }
+        }
+    </script>
+        
+  </head>
+  <body>
+    <div id="ui">
+      <label for="level">Hashpower / Compute level</label>
+      <input id="level" type="range" min="0" max="50" step="1" value="10" />
+      <div id="stats"></div>
+      <div id="hint">Tip: drag the slider—packet density/speed + core pulse increase.</div>
+    </div>
+
+    <script type="module">
+      import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+      import { OrbitControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+      // ---------- Helpers ----------
+      function smoothstep(e0, e1, x) {
+        const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)));
+        return t * t * (3 - 2 * t);
+      }
+
+      function randNorm() {
+        // approx normal-ish distribution using sum of uniforms
+        return (Math.random() + Math.random() + Math.random() + Math.random() - 2.0) * 0.7;
+      }
+
+      // ---------- Scene ----------
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.setSize(innerWidth, innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      const scene = new THREE.Scene();
+      
+
+      const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
+      camera.position.set(0, 6, 16);
+
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+
+      // Lights
+      scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+      const rim = new THREE.DirectionalLight(0xffffff, 0.8);
+      rim.position.set(6, 10, 8);
+      scene.add(rim);
+
+      // ---------- Simple validator (rectangle + LEDs) ----------
+      const coreNode = new THREE.Group();
+
+      const bodyMat = new THREE.MeshStandardMaterial({
+        color: 0x0b1020,
+        metalness: 0.2,
+        roughness: 0.65,
+      });
+
+      // width, height, depth
+      const body = new THREE.Mesh(new THREE.BoxGeometry(2.2, 4.2, 1.2), bodyMat);
+      body.position.set(0, 2.1, 0);
+      coreNode.add(body);
+
+      const frontMat = new THREE.MeshStandardMaterial({
+        color: 0x070a12,
+        metalness: 0.05,
+        roughness: 0.9,
+      });
+
+      const front = new THREE.Mesh(new THREE.BoxGeometry(2.05, 4.0, 0.15), frontMat);
+      front.position.set(0, 2.1, 0.68);
+      coreNode.add(front);
+
+      // LEDs (emissive)
+      const ledGeom = new THREE.SphereGeometry(0.06, 12, 12);
+      const ledGreen = new THREE.MeshStandardMaterial({
+        color: 0x0a0f14,
+        emissive: 0x14f195,
+        emissiveIntensity: 1.2,
+      });
+      const ledBlue = new THREE.MeshStandardMaterial({
+        color: 0x0a0f14,
+        emissive: 0x00d1ff,
+        emissiveIntensity: 1.0,
+      });
+
+      const leds = [];
+      for (let i = 0; i < 6; i++) {
+        const mat = i % 2 === 0 ? ledGreen : ledBlue;
+        const led = new THREE.Mesh(ledGeom, mat);
+        led.position.set(-0.85 + i * 0.34, 4.0, 0.78);
+        coreNode.add(led);
+        leds.push(led);
+      }
+
+      // Size + height
+      const BASE_SCALE = 0.55;         // overall size
+      coreNode.scale.setScalar(BASE_SCALE);
+      coreNode.position.set(0, 0.2, 0); // height (Y)
+
+      scene.add(coreNode);
+
+      // ---------- “Packets” simulation arrays ----------
+      const MAX = 20000;
+
+      const positions = new Float32Array(MAX * 3);   // head position
+      const velocities = new Float32Array(MAX * 3);  // velocity
+      const life = new Float32Array(MAX);
+      const maxLife = new Float32Array(MAX);
+      const kind = new Float32Array(MAX);            // 0=incoming, 1=core, 2=outgoing
+
+      for (let i = 0; i < MAX; i++) life[i] = 0;
+
+      // ---------- Network line rendering ----------
+      const linePositions = new Float32Array(MAX * 2 * 3); // (tail, head)
+      const lineColors = new Float32Array(MAX * 2 * 3);
+
+      const lineGeom = new THREE.BufferGeometry();
+      lineGeom.setAttribute("position", new THREE.BufferAttribute(linePositions, 3));
+      lineGeom.setAttribute("color", new THREE.BufferAttribute(lineColors, 3));
+
+      const lineMat = new THREE.LineBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.95,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+
+      const lines = new THREE.LineSegments(lineGeom, lineMat);
+      lines.frustumCulled = false;
+      scene.add(lines);
+
+      const C_IN = new THREE.Color(0.35, 0.65, 1.00);
+      const C_CORE = new THREE.Color(0.55, 0.35, 1.00);
+      const C_OUT = new THREE.Color(1.00, 0.70, 0.30);
+
+      // ---------- Spawning helpers ----------
+      let cursor = 0;
+
+      function findDead() {
+        for (let k = 0; k < 96; k++) {
+          cursor = (cursor + 1) % MAX;
+          if (life[cursor] <= 0) return cursor;
+        }
+        for (let i = 0; i < MAX; i++) {
+          if (life[i] <= 0) return i;
+        }
+        return -1;
+      }
+
+      function spawnIncoming(speed, ttl) {
+        const i = findDead();
+        if (i < 0) return;
+
+        // spawn around a ring/sphere, heading inward
+        const radius = 8.0 + Math.random() * 2.5;
+        const v = new THREE.Vector3(randNorm(), randNorm() * 0.5, randNorm())
+          .normalize()
+          .multiplyScalar(radius);
+
+        positions[i * 3 + 0] = v.x;
+        positions[i * 3 + 1] = v.y;
+        positions[i * 3 + 2] = v.z;
+
+        // velocity towards origin + slight noise
+        v.multiplyScalar(-1).normalize();
+        velocities[i * 3 + 0] = v.x * speed + randNorm() * 0.05;
+        velocities[i * 3 + 1] = v.y * speed + randNorm() * 0.03;
+        velocities[i * 3 + 2] = v.z * speed + randNorm() * 0.05;
+
+        kind[i] = 0.0;
+        maxLife[i] = ttl;
+        life[i] = ttl;
+      }
+
+      function spawnCorePulse(strength, ttl) {
+        const i = findDead();
+        if (i < 0) return;
+
+        // emit from near validator center
+        const r = 0.25 + Math.random() * 0.25;
+        const p = new THREE.Vector3(randNorm(), randNorm(), randNorm()).normalize().multiplyScalar(r);
+
+        positions[i * 3 + 0] = p.x;
+        positions[i * 3 + 1] = p.y + 2.1 * BASE_SCALE; // bias toward validator center height
+        positions[i * 3 + 2] = p.z;
+
+        // swirl-ish + outward
+        const outward = p.clone().normalize().multiplyScalar(0.35 * strength);
+        const swirl = new THREE.Vector3(-p.z, 0, p.x).normalize().multiplyScalar(0.65 * strength);
+
+        velocities[i * 3 + 0] = outward.x + swirl.x;
+        velocities[i * 3 + 1] = outward.y + (randNorm() * 0.05);
+        velocities[i * 3 + 2] = outward.z + swirl.z;
+
+        kind[i] = 1.0;
+        maxLife[i] = ttl;
+        life[i] = ttl;
+      }
+
+      function spawnOutgoing(speed, ttl) {
+        const i = findDead();
+        if (i < 0) return;
+
+        const dir = new THREE.Vector3(randNorm(), randNorm() * 0.35, randNorm()).normalize();
+
+        // start near validator center
+        positions[i * 3 + 0] = dir.x * 0.3;
+        positions[i * 3 + 1] = 2.1 * BASE_SCALE + dir.y * 0.3;
+        positions[i * 3 + 2] = dir.z * 0.3;
+
+        velocities[i * 3 + 0] = dir.x * speed + randNorm() * 0.05;
+        velocities[i * 3 + 1] = dir.y * speed + randNorm() * 0.03;
+        velocities[i * 3 + 2] = dir.z * speed + randNorm() * 0.05;
+
+        kind[i] = 2.0;
+        maxLife[i] = ttl;
+        life[i] = ttl;
+      }
+
+      function convertToOutgoing(i, speed, ttl) {
+        // convert current particle at its position, aiming outward from validator center height
+        const px = positions[i * 3 + 0];
+        const py = positions[i * 3 + 1] - 2.1 * BASE_SCALE;
+        const pz = positions[i * 3 + 2];
+
+        const len = Math.hypot(px, py, pz) || 1.0;
+        const nx = px / len, ny = py / len, nz = pz / len;
+
+        velocities[i * 3 + 0] = nx * speed + randNorm() * 0.05;
+        velocities[i * 3 + 1] = ny * speed + randNorm() * 0.03;
+        velocities[i * 3 + 2] = nz * speed + randNorm() * 0.05;
+
+        kind[i] = 2.0;
+        maxLife[i] = ttl;
+        life[i] = ttl;
+      }
+
+      // ---------- UI + tuning ----------
+      const levelEl = document.getElementById("level");
+      const statsEl = document.getElementById("stats");
+
+      const params = {
+        level: Number(levelEl.value),
+        spawnIncoming: 0,
+        spawnCore: 0,
+        spawnOutgoingBonus: 0,
+        inSpeed: 0,
+        outSpeed: 0,
+        pulseFreq: 0,
+      };
+
+      function computeParams() {
+        const L = params.level;
+        params.spawnIncoming = 40 + L * 6;        // per second
+        params.spawnCore = 18 + L * 3.0;          // per second
+        params.spawnOutgoingBonus = 6 + L * 0.9;  // per second
+
+        params.inSpeed = 1.2 + L * 0.03;
+        params.outSpeed = 1.4 + L * 0.045;
+
+        params.pulseFreq = 1.2 + L * 0.03;
+      }
+
+      levelEl.addEventListener("input", () => {
+        params.level = Number(levelEl.value);
+        computeParams();
+      });
+
+      computeParams();
+
+      function updateStats(aliveCount) {
+        statsEl.innerHTML =
+          `Level: <b>${params.level}</b><br>` +
+          `Incoming: <b>${params.spawnIncoming.toFixed(0)}/s</b><br>` +
+          `Core pulses: <b>${params.spawnCore.toFixed(0)}/s</b><br>` +
+          `Speeds (in/out): <b>${params.inSpeed.toFixed(2)} / ${params.outSpeed.toFixed(2)}</b><br>` +
+          `Lines alive: <b>${aliveCount}</b> / ${MAX}`;
+      }
+
+      // ---------- Animation loop ----------
+      let last = performance.now();
+      let accIn = 0, accCore = 0, accBonus = 0;
+
+      function animate(now) {
+        requestAnimationFrame(animate);
+
+        const dt = Math.min(0.033, (now - last) / 1000);
+        last = now;
+
+        controls.update();
+
+        // pulse + scale validator
+        const t = now * 0.001;
+        const pulse = 0.5 + 0.5 * Math.sin(t * params.pulseFreq * 2.0 * Math.PI);
+
+        coreNode.scale.setScalar(BASE_SCALE * (1.0 + pulse * (0.05 + params.level * 0.0012)));
+        ledGreen.emissiveIntensity = 0.9 + pulse * (0.9 + params.level * 0.01);
+        ledBlue.emissiveIntensity = 0.7 + pulse * (0.8 + params.level * 0.008);
+
+        // spawn accumulators (rate * dt)
+        accIn += params.spawnIncoming * dt;
+        accCore += params.spawnCore * dt;
+        accBonus += params.spawnOutgoingBonus * dt;
+
+        while (accIn >= 1.0) {
+          spawnIncoming(params.inSpeed, 2.6);
+          accIn -= 1.0;
+        }
+        while (accCore >= 1.0) {
+          spawnCorePulse(1.0 + params.level * 0.02, 1.6);
+          accCore -= 1.0;
+        }
+        while (accBonus >= 1.0) {
+          spawnOutgoing(params.outSpeed * 1.25, 1.8);
+          accBonus -= 1.0;
+        }
+
+        // update packets + write line segments
+        let aliveCount = 0;
+
+        const validatorCenterY = 2.1 * BASE_SCALE; // approximate center height in world-ish terms
+        const inToOutRadius = 0.75;                // "hit" radius around validator center
+
+        for (let i = 0; i < MAX; i++) {
+          if (life[i] <= 0) {
+            // hide dead segments offscreen
+            const b = i * 6;
+            linePositions[b + 0] = linePositions[b + 3] = 9999;
+            linePositions[b + 1] = linePositions[b + 4] = 9999;
+            linePositions[b + 2] = linePositions[b + 5] = 9999;
+            continue;
+          }
+
+          aliveCount++;
+
+          // move head
+          positions[i * 3 + 0] += velocities[i * 3 + 0] * dt;
+          positions[i * 3 + 1] += velocities[i * 3 + 1] * dt;
+          positions[i * 3 + 2] += velocities[i * 3 + 2] * dt;
+
+          // drag
+          velocities[i * 3 + 0] *= (1.0 - dt * 0.12);
+          velocities[i * 3 + 1] *= (1.0 - dt * 0.12);
+          velocities[i * 3 + 2] *= (1.0 - dt * 0.12);
+
+          life[i] -= dt;
+
+          // incoming reaches validator -> convert to outgoing
+          if (kind[i] < 0.5) {
+            const x = positions[i * 3 + 0];
+            const y = positions[i * 3 + 1] - validatorCenterY;
+            const z = positions[i * 3 + 2];
+            const r2 = x * x + y * y + z * z;
+            if (r2 < inToOutRadius * inToOutRadius) {
+              convertToOutgoing(i, params.outSpeed, 2.0);
+            }
+          }
+
+          // color by kind
+          const k = kind[i];
+          const col = (k < 0.5) ? C_IN : ((k < 1.5) ? C_CORE : C_OUT);
+
+          // life fade baked into RGB
+          const life01 = Math.max(0, Math.min(1, life[i] / Math.max(0.0001, maxLife[i]))); // remaining
+        const age01 = 1.0 - life01;
+
+        const fadeIn  = smoothstep(0.0, 0.10, age01);
+        const fadeOut = 1.0 - smoothstep(0.75, 1.0, age01);
+        const fade = fadeIn * fadeOut;
+
+
+
+          // segment direction from velocity
+          const vx = velocities[i * 3 + 0], vy = velocities[i * 3 + 1], vz = velocities[i * 3 + 2];
+          const sp = Math.hypot(vx, vy, vz) || 0.0001;
+          const nx = vx / sp, ny = vy / sp, nz = vz / sp;
+
+          const wiggle = (kind[i] < 0.5 ? 0.05 : 0.02) * (1 + params.level * 0.01) * fade;
+const wx = -nz * wiggle;
+const wz =  nx * wiggle;
+
+
+          // trail length scales with level
+          const baseTrail = 1.0;                        // longer streaks
+const levelTrail = baseTrail * (1 + params.level * 0.02);
+const trail = levelTrail * (0.25 + 0.75 * fade); // never collapses to 0
+
+
+          // head
+          const hx = positions[i * 3 + 0];
+          const hy = positions[i * 3 + 1];
+          const hz = positions[i * 3 + 2];
+
+          // tail
+          const tx = hx - nx * trail + wx;
+const ty = hy - ny * trail;
+const tz = hz - nz * trail + wz;
+
+          // write segment (tail -> head)
+          const b = i * 6;
+          linePositions[b + 0] = tx; linePositions[b + 1] = ty; linePositions[b + 2] = tz;
+          linePositions[b + 3] = hx; linePositions[b + 4] = hy; linePositions[b + 5] = hz;
+
+          // color both ends (tail dimmer)
+          const cb = i * 6;
+          const tailMul = 0.35 * fade;
+    const headMul = 2.2  * fade;
+
+
+          lineColors[cb + 0] = col.r * tailMul; lineColors[cb + 1] = col.g * tailMul; lineColors[cb + 2] = col.b * tailMul;
+          lineColors[cb + 3] = col.r * headMul; lineColors[cb + 4] = col.g * headMul; lineColors[cb + 5] = col.b * headMul;
+        }
+
+        lineGeom.attributes.position.needsUpdate = true;
+        lineGeom.attributes.color.needsUpdate = true;
+
+        updateStats(aliveCount);
+        renderer.render(scene, camera);
+      }
+
+      requestAnimationFrame(animate);
+
+      // ---------- Resize ----------
+      addEventListener("resize", () => {
+        camera.aspect = innerWidth / innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(innerWidth, innerHeight);
+      });
+    </script>
+  </body>
+</html>

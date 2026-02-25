@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>EPOCH Idle – Banner</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 1920px; height: 1080px; overflow: hidden; }
+    .banner {
+      width: 1920px;
+      height: 1080px;
+      /* AAA: same as home-aaa */
+      background:
+        radial-gradient(ellipse 80% 50% at 50% 40%, rgba(153, 69, 255, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse 100% 100% at 50% 50%, rgba(20, 241, 149, 0.04) 0%, transparent 60%),
+        linear-gradient(180deg, #0a0a0c 0%, #0d0a12 40%, #080508 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      font-family: 'Press Start 2P', monospace;
+    }
+    .banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 100% 100% at 50% 50%, transparent 30%, rgba(0, 0, 0, 0.6) 100%);
+      pointer-events: none;
+    }
+    .banner-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(153, 69, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(153, 69, 255, 0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+    .eyebrow {
+      font-size: 14px;
+      color: rgba(0, 212, 255, 0.8);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+    .title {
+      font-size: 80px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #9945FF 0%, #14F195 50%, #00D4FF 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      filter: drop-shadow(0 0 20px rgba(153, 69, 255, 0.4)) drop-shadow(0 0 40px rgba(153, 69, 255, 0.2)) drop-shadow(0 0 60px rgba(20, 241, 149, 0.15));
+      letter-spacing: 0.02em;
+      margin-bottom: 28px;
+      position: relative;
+      z-index: 1;
+    }
+    .title .pixel-shadow {
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.8)) drop-shadow(4px 4px 0 rgba(0, 0, 0, 0.4)) drop-shadow(0 0 20px rgba(153, 69, 255, 0.4)) drop-shadow(0 0 40px rgba(20, 241, 149, 0.2));
+    }
+    .tagline {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.7);
+      text-align: center;
+      white-space: nowrap;
+      letter-spacing: 0.05em;
+      position: relative;
+      z-index: 1;
+    }
+    .slot-hint {
+      position: absolute;
+      bottom: 52px;
+      font-size: 14px;
+      color: rgba(20, 241, 149, 0.9);
+      z-index: 1;
+    }
+    .corner {
+      position: absolute;
+      width: 72px;
+      height: 72px;
+      border-color: rgba(153, 69, 255, 0.5);
+      border-style: solid;
+      border-width: 0;
+      z-index: 1;
+    }
+    .corner-tl { top: 28px; left: 28px; border-top-width: 4px; border-left-width: 4px; }
+    .corner-tr { top: 28px; right: 28px; border-top-width: 4px; border-right-width: 4px; }
+    .corner-bl { bottom: 28px; left: 28px; border-bottom-width: 4px; border-left-width: 4px; }
+    .corner-br { bottom: 28px; right: 28px; border-bottom-width: 4px; border-right-width: 4px; }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <div class="banner-grid" aria-hidden="true"></div>
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+    <p class="eyebrow">Your validator awaits.</p>
+    <h1 class="title">EPOCH Idle</h1>
+    <p class="tagline">PROCESS SLOTS • EARN LAMPORTS • ADVANCE EPOCHS</p>
+    <span class="slot-hint">NO WALLET REQUIRED — JUST PLAY</span>
+  </div>
+  <button id="download" style="
+    position: fixed; bottom: 12px; right: 12px; z-index: 9999;
+    font-family: 'Press Start 2P', monospace; font-size: 10px;
+    padding: 10px 14px; background: #14F195; color: #0a0a0c; border: 4px solid #0a0a0c; cursor: pointer;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.8);
+  ">Download 1920×1080 PNG</button>
+
+  <script>
+    document.getElementById('download').onclick = function() {
+      var run = function() {
+        var canvas = document.createElement('canvas');
+        canvas.width = 1920;
+        canvas.height = 1080;
+        var ctx = canvas.getContext('2d');
+        var g = ctx.createLinearGradient(0, 0, 0, 1080);
+        g.addColorStop(0, '#0a0a0c');
+        g.addColorStop(0.4, '#0d0a12');
+        g.addColorStop(1, '#080508');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, 1920, 1080);
+        var r1 = ctx.createRadialGradient(960, 432, 0, 960, 432, 900);
+        r1.addColorStop(0, 'rgba(153, 69, 255, 0.12)');
+        r1.addColorStop(0.5, 'transparent');
+        ctx.fillStyle = r1;
+        ctx.fillRect(0, 0, 1920, 1080);
+        var r2 = ctx.createRadialGradient(960, 540, 0, 960, 540, 1000);
+        r2.addColorStop(0, 'rgba(20, 241, 149, 0.04)');
+        r2.addColorStop(0.6, 'transparent');
+        ctx.fillStyle = r2;
+        ctx.fillRect(0, 0, 1920, 1080);
+        var vignette = ctx.createRadialGradient(960, 540, 300, 960, 540, 1200);
+        vignette.addColorStop(0, 'transparent');
+        vignette.addColorStop(1, 'rgba(0, 0, 0, 0.6)');
+        ctx.fillStyle = vignette;
+        ctx.fillRect(0, 0, 1920, 1080);
+        for (var x = 0; x <= 1920; x += 48) {
+          ctx.strokeStyle = 'rgba(153, 69, 255, 0.03)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, 1080);
+          ctx.stroke();
+        }
+        for (var y = 0; y <= 1080; y += 48) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(1920, y);
+          ctx.stroke();
+        }
+        ctx.strokeStyle = 'rgba(153, 69, 255, 0.5)';
+        ctx.lineWidth = 4;
+        var L = 28, S = 72;
+        ctx.beginPath();
+        ctx.moveTo(L, L + S); ctx.lineTo(L, L); ctx.lineTo(L + S, L);
+        ctx.moveTo(1920 - L - S, L); ctx.lineTo(1920 - L, L); ctx.lineTo(1920 - L, L + S);
+        ctx.moveTo(L, 1080 - L - S); ctx.lineTo(L, 1080 - L); ctx.lineTo(L + S, 1080 - L);
+        ctx.moveTo(1920 - L - S, 1080 - L); ctx.lineTo(1920 - L, 1080 - L); ctx.lineTo(1920 - L, 1080 - L - S);
+        ctx.stroke();
+        ctx.font = '14px "Press Start 2P"';
+        ctx.fillStyle = 'rgba(0, 212, 255, 0.8)';
+        ctx.textAlign = 'center';
+        ctx.fillText('YOUR VALIDATOR AWAITS.', 960, 420);
+        ctx.font = '80px "Press Start 2P"';
+        var grad = ctx.createLinearGradient(0, 0, 1200, 600);
+        grad.addColorStop(0, '#9945FF');
+        grad.addColorStop(0.5, '#14F195');
+        grad.addColorStop(1, '#00D4FF');
+        ctx.fillStyle = grad;
+        ctx.fillText('EPOCH IDLE', 960, 530);
+        ctx.font = '18px "Press Start 2P"';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.fillText('PROCESS SLOTS • EARN LAMPORTS • ADVANCE EPOCHS', 960, 600);
+        ctx.font = '14px "Press Start 2P"';
+        ctx.fillStyle = 'rgba(20, 241, 149, 0.9)';
+        ctx.fillText('NO WALLET REQUIRED — JUST PLAY', 960, 1020);
+        var a = document.createElement('a');
+        a.download = 'epoch-idle-banner.png';
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+      };
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(run);
+      } else {
+        run();
+      }
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=512, height=512">
+  <title>EPOCH Idle – Logo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 512px; height: 512px; overflow: hidden; background: #1a1a1a; }
+    .logo-wrap {
+      width: 512px;
+      height: 512px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      font-family: 'Press Start 2P', monospace;
+      /* transparent for export; page bg only for preview */
+      background: transparent;
+    }
+    .logo-preview {
+      width: 512px;
+      height: 512px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      font-family: 'Press Start 2P', monospace;
+      background: transparent;
+    }
+    .logo-epoch {
+      font-size: 56px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #9945FF 0%, #14F195 50%, #00D4FF 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.9)) drop-shadow(0 0 24px rgba(153, 69, 255, 0.35)) drop-shadow(0 0 48px rgba(20, 241, 149, 0.2));
+      letter-spacing: 0.02em;
+      line-height: 1.4;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    .logo-idle {
+      font-size: 22px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #9945FF 0%, #14F195 50%, #00D4FF 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.9)) drop-shadow(0 0 16px rgba(153, 69, 255, 0.3));
+      letter-spacing: 0.15em;
+      margin-top: 8px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    #download {
+      position: fixed;
+      bottom: 12px;
+      right: 12px;
+      z-index: 9999;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
+      padding: 8px 12px;
+      background: #14F195;
+      color: #0a0a0c;
+      border: 3px solid #0a0a0c;
+      cursor: pointer;
+      box-shadow: 3px 3px 0 rgba(0,0,0,0.8);
+    }
+  </style>
+</head>
+<body>
+  <div class="logo-wrap" id="logoPreview">
+    <div class="logo-preview">
+      <span class="logo-epoch">EPOCH</span>
+      <span class="logo-idle">IDLE</span>
+    </div>
+  </div>
+  <button type="button" id="download">Download 512×512 PNG</button>
+
+  <script>
+    document.getElementById('download').onclick = function() {
+      function run() {
+        var canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        var ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, 512, 512);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        var grad = ctx.createLinearGradient(0, 0, 400, 300);
+        grad.addColorStop(0, '#9945FF');
+        grad.addColorStop(0.5, '#14F195');
+        grad.addColorStop(1, '#00D4FF');
+        ctx.fillStyle = grad;
+        ctx.font = '56px "Press Start 2P"';
+        ctx.fillText('EPOCH', 256, 232);
+        ctx.font = '22px "Press Start 2P"';
+        ctx.fillText('IDLE', 256, 288);
+        var a = document.createElement('a');
+        a.download = 'epoch-idle-logo.png';
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+      }
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(run);
+      } else {
+        run();
+      }
+    };
+  </script>
+</body>
+</html>
