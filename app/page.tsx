@@ -147,7 +147,7 @@ export default function Home() {
   }
 
   return (
-    <main className="game-aaa flex flex-col min-h-screen w-full md:h-screen md:max-h-screen overflow-y-auto md:overflow-hidden">
+    <main className="game-aaa flex flex-col h-screen max-h-screen w-full overflow-y-auto overflow-x-hidden md:overflow-hidden touch-pan-y">
       <div className="game-aaa-grid" aria-hidden />
       <div className="game-corner game-corner-tl" aria-hidden />
       <div className="game-corner game-corner-tr" aria-hidden />
@@ -155,9 +155,9 @@ export default function Home() {
       <div className="game-corner game-corner-br" aria-hidden />
       <OfflineClaimPopup />
 
-      {/* On mobile: content stacks and scrolls. On md+: single viewport. */}
-      <div className="flex flex-col w-full max-w-full box-border game-monitor game-monitor-padding md:flex-1 md:min-h-0">
-        <div className="flex flex-col w-full game-screen px-1 sm:px-2 md:px-4 pb-1 sm:pb-2 md:flex-1 md:min-h-0 md:overflow-hidden">
+      {/* On mobile: content stacks and scrolls inside main. On md+: single viewport. */}
+      <div className="flex flex-col w-full max-w-full box-border game-monitor game-monitor-padding flex-1 min-h-0 overflow-hidden">
+        <div className="flex flex-col w-full min-h-0 game-screen game-screen-mobile-scroll px-1 sm:px-2 md:px-4 pb-1 sm:pb-2 md:flex-1 md:overflow-hidden">
           <ValidatorStatusBar />
 
           {activeTab === 'achievements' ? (
@@ -207,7 +207,7 @@ export default function Home() {
               </div>
             </div>
           ) : (
-            <div className="flex-1 grid grid-cols-1 xl:grid-cols-3 gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 md:p-4 items-stretch md:min-h-0 md:overflow-auto">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 md:p-4 items-stretch md:flex-1 md:min-h-0 md:overflow-auto">
               {/* Column 1: Validator Dashboard */}
               <div className="flex flex-col md:min-h-0">
                 <ControlPanelPanel title="VALIDATOR DASHBOARD" className="flex flex-col md:flex-1 md:min-h-0">

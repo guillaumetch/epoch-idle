@@ -163,19 +163,22 @@ body {
   z-index: 1;
   pointer-events: none;
 }
+@media (max-width: 767px) {
+  .home-corner { display: none; }
+}
 .home-corner-tl { top: 12px; left: 12px; border-top-width: 3px; border-left-width: 3px; }
 .home-corner-tr { top: 12px; right: 12px; border-top-width: 3px; border-right-width: 3px; }
 .home-corner-bl { bottom: 12px; left: 12px; border-bottom-width: 3px; border-left-width: 3px; }
 .home-corner-br { bottom: 12px; right: 12px; border-bottom-width: 3px; border-right-width: 3px; }
-@media (min-width: 640px) {
-  .home-corner { width: 56px; height: 56px; }
+@media (min-width: 768px) {
+  .home-corner { display: block; width: 56px; height: 56px; }
   .home-corner-tl { top: 20px; left: 20px; border-top-width: 4px; border-left-width: 4px; }
   .home-corner-tr { top: 20px; right: 20px; border-top-width: 4px; border-right-width: 4px; }
   .home-corner-bl { bottom: 20px; left: 20px; border-bottom-width: 4px; border-left-width: 4px; }
   .home-corner-br { bottom: 20px; right: 20px; border-bottom-width: 4px; border-right-width: 4px; }
 }
 @media (min-width: 1024px) {
-  .home-corner { width: 72px; height: 72px; }
+  .home-corner { display: block; width: 72px; height: 72px; }
   .home-corner-tl { top: 28px; left: 28px; }
   .home-corner-tr { top: 28px; right: 28px; }
   .home-corner-bl { bottom: 28px; left: 28px; }
@@ -300,12 +303,18 @@ body {
   z-index: 10;
   pointer-events: none;
 }
+/* Hide corner frame on mobile */
+@media (max-width: 767px) {
+  .game-corner {
+    display: none;
+  }
+}
 .game-corner-tl { top: 12px; left: 12px; border-top-width: 3px; border-left-width: 3px; }
 .game-corner-tr { top: 12px; right: 12px; border-top-width: 3px; border-right-width: 3px; }
 .game-corner-bl { bottom: 12px; left: 12px; border-bottom-width: 3px; border-left-width: 3px; }
 .game-corner-br { bottom: 12px; right: 12px; border-bottom-width: 3px; border-right-width: 3px; }
-@media (min-width: 640px) {
-  .game-corner { width: 56px; height: 56px; }
+@media (min-width: 768px) {
+  .game-corner { display: block; width: 56px; height: 56px; }
   .game-corner-tl { top: 20px; left: 20px; border-top-width: 4px; border-left-width: 4px; }
   .game-corner-tr { top: 20px; right: 20px; border-top-width: 4px; border-right-width: 4px; }
   .game-corner-bl { bottom: 20px; left: 20px; border-bottom-width: 4px; border-left-width: 4px; }
@@ -373,6 +382,17 @@ body {
     0 0 20px rgba(153, 69, 255, 0.06);
   position: relative;
   overflow: hidden;
+}
+/* Mobile: game screen scrolls so stacked columns are reachable */
+.game-screen-mobile-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 768px) {
+  .game-screen-mobile-scroll {
+    overflow-y: hidden;
+  }
 }
 .game-screen::after {
   content: '';
