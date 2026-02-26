@@ -147,7 +147,7 @@ export default function Home() {
   }
 
   return (
-    <main className="game-aaa flex flex-col h-screen max-h-screen w-full overflow-hidden">
+    <main className="game-aaa flex flex-col min-h-screen w-full md:h-screen md:max-h-screen overflow-y-auto md:overflow-hidden">
       <div className="game-aaa-grid" aria-hidden />
       <div className="game-corner game-corner-tl" aria-hidden />
       <div className="game-corner game-corner-tr" aria-hidden />
@@ -155,9 +155,9 @@ export default function Home() {
       <div className="game-corner game-corner-br" aria-hidden />
       <OfflineClaimPopup />
 
-      {/* Control panel: responsive inset so content fits on mobile and desktop */}
-      <div className="flex-1 flex flex-col min-h-0 w-full max-w-full box-border game-monitor game-monitor-padding">
-        <div className="flex-1 flex flex-col min-h-0 w-full overflow-hidden game-screen px-1 sm:px-2 md:px-4 pb-1 sm:pb-2">
+      {/* On mobile: content stacks and scrolls. On md+: single viewport. */}
+      <div className="flex flex-col w-full max-w-full box-border game-monitor game-monitor-padding md:flex-1 md:min-h-0">
+        <div className="flex flex-col w-full game-screen px-1 sm:px-2 md:px-4 pb-1 sm:pb-2 md:flex-1 md:min-h-0 md:overflow-hidden">
           <ValidatorStatusBar />
 
           {activeTab === 'achievements' ? (
@@ -207,13 +207,13 @@ export default function Home() {
               </div>
             </div>
           ) : (
-            <div className="flex-1 grid grid-cols-1 xl:grid-cols-3 gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 md:p-4 min-h-0 items-stretch overflow-auto">
+            <div className="flex-1 grid grid-cols-1 xl:grid-cols-3 gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 md:p-4 items-stretch md:min-h-0 md:overflow-auto">
               {/* Column 1: Validator Dashboard */}
-              <div className="flex flex-col min-h-0">
-                <ControlPanelPanel title="VALIDATOR DASHBOARD" className="flex-1 flex flex-col min-h-0">
-                  <div className="flex flex-col h-full">
+              <div className="flex flex-col md:min-h-0">
+                <ControlPanelPanel title="VALIDATOR DASHBOARD" className="flex flex-col md:flex-1 md:min-h-0">
+                  <div className="flex flex-col md:h-full">
                     <ResourceDisplay />
-                    <div className="flex flex-col items-center justify-center mt-2 sm:mt-4 flex-1">
+                    <div className="flex flex-col items-center justify-center mt-2 sm:mt-4 md:flex-1">
                       <ClickButton />
                     </div>
                   </div>
@@ -221,18 +221,18 @@ export default function Home() {
               </div>
 
               {/* Column 2: Upgrades */}
-              <div className="flex flex-col min-h-0">
-                <ControlPanelPanel title="UPGRADES" className="flex-1 flex flex-col min-h-0">
+              <div className="flex flex-col md:min-h-0">
+                <ControlPanelPanel title="UPGRADES" className="flex flex-col md:flex-1 md:min-h-0">
                   <UpgradePanel />
                 </ControlPanelPanel>
               </div>
 
               {/* Column 3: BPF Bots + Epoch */}
-              <div className="flex flex-col gap-2 sm:gap-3 md:gap-4 min-h-0">
-                <ControlPanelPanel title="BPF BOTS" className="flex-[0.4] flex flex-col min-h-0">
+              <div className="flex flex-col gap-2 sm:gap-3 md:gap-4 md:min-h-0">
+                <ControlPanelPanel title="BPF BOTS" className="flex flex-col md:flex-[0.4] md:min-h-0">
                   <BotPanel />
                 </ControlPanelPanel>
-                <ControlPanelPanel title="EPOCH" className="flex-[0.6] flex flex-col min-h-0">
+                <ControlPanelPanel title="EPOCH" className="flex flex-col md:flex-[0.6] md:min-h-0">
                   <PrestigePanel />
                 </ControlPanelPanel>
               </div>
