@@ -15,12 +15,12 @@ export function ControlPanelPanel({ title, children, className = '' }: ControlPa
       role="region"
       aria-label={title}
     >
-      <div className="flex-shrink-0 px-3 py-2 border-b-2 border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900">
-        <span className="text-[10px] text-white font-bold tracking-wider truncate block">
+      <div className="flex-shrink-0 px-2 sm:px-3 py-1.5 sm:py-2 border-b-2 border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900">
+        <span className="text-[8px] sm:text-[10px] text-white font-bold tracking-wider truncate block">
           {title}
         </span>
       </div>
-      <div className="flex-1 overflow-auto p-3 min-h-0">
+      <div className="flex-1 overflow-auto p-2 sm:p-3 min-h-0">
         {children}
       </div>
     </div>

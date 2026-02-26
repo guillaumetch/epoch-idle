@@ -1,7 +1,7 @@
 // Game balance constants (scaled so 1B = 1 SOL prestige in ~15 min)
 export const GAME_CONSTANTS = {
-  // Click mechanics (tuned so 1B prestige in ~15 min)
-  BASE_LAMPORTS_PER_CLICK: 28_000,
+  // Click mechanics (tuned so 1B prestige in ~7 min with upgrade stacking)
+  BASE_LAMPORTS_PER_CLICK: 800,
   MAX_CLICKS_PER_SECOND: 10,
   CLICK_COOLDOWN_MS: 100, // Base cooldown (100ms = 10 clicks/s)
   
@@ -18,7 +18,7 @@ export const GAME_CONSTANTS = {
   // Bot system (tuned for ~15 min to 1B)
   BOT_BASE_COST: 1_000_000,
   BOT_COST_MULTIPLIER: 1.15,
-  BOT_INCOME_PER_SECOND: 14_000, // 14K L/s per bot
+  BOT_INCOME_PER_SECOND: 400, // 400 L/s per bot
   
   // Upgrade costs (scaled 1000x)
   UPGRADE_COSTS: {
@@ -32,11 +32,11 @@ export const GAME_CONSTANTS = {
     jitoTipJar: 8, // Shreds (unchanged)
   },
   
-  // Upgrade effects (tuned for ~15 min to 1B)
+  // Upgrade effects (tuned for ~7 min to 1B with stacking)
   UPGRADE_EFFECTS: {
-    hashpower1: 28_000, // +28K lamports/click
-    hashpower2: 140_000, // +140K lamports/click
-    hashpower3: 700_000, // +700K lamports/click
+    hashpower1: 800, // +800 lamports/click per level
+    hashpower2: 4_000, // +4K lamports/click per level
+    hashpower3: 20_000, // +20K lamports/click per level
     rpcSpeed: 0.05, // -5% cooldown per level (max 5 levels = -25%)
     voteCredits: 0.1, // +10% all income (stacks)
     geyserIndex: 0.2, // +20% idle income (stacks)

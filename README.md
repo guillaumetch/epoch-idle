@@ -14,7 +14,7 @@ Solana has great tech and a rich validator/RPC ecosystem, but it can feel abstra
 
 ## Goals for this submission
 
-- **Ship a complete, playable game** — One session from zero to first prestige (~15 min) with no setup.
+- **Ship a complete, playable game** — One session from zero to first prestige (~7 min) with no setup.
 - **Make Solana tangible** — Real validator/ecosystem terms in a game loop that sticks.
 - **Show we can extend it** — Roadmap to ACHIEVO, cNFTs, and cloud save proves the idea scales beyond the hackathon.
 
@@ -83,7 +83,7 @@ npm start
 
 ### BPF Bots
 
-- Each bot generates 14K L/s
+- Each bot generates 400 L/s
 - Cost increases by 15% per bot (1M L base)
 
 ### Prestige (Advance Epoch)
@@ -91,7 +91,7 @@ npm start
 - Unlock at 1,000,000,000 lamports (1 SOL)
 - Resets lamports, upgrades, and bots
 - Grants +20% Stake Power (permanent multiplier)
-- Target: First prestige in ≤15 minutes
+- Target: First prestige in ~7 minutes
 
 ## Project Structure
 

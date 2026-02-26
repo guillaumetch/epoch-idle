@@ -24,8 +24,8 @@ export function UpgradePanel() {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+    <div className="space-y-3 sm:space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
         {upgradeList.map((upgradeType) => {
           const def = UPGRADE_DEFINITIONS[upgradeType];
           const currentLevel = upgrades[upgradeType];
@@ -39,7 +39,7 @@ export function UpgradePanel() {
             <div
               key={upgradeType}
               className={`
-                p-3 border-4
+                p-2 sm:p-3 border-2 sm:border-4
                 ${canAfford && !maxed
                   ? 'border-solana-green bg-solana-green/20'
                   : 'border-gray-600 bg-gray-800'
@@ -73,7 +73,7 @@ export function UpgradePanel() {
                   onClick={() => handleBuy(upgradeType)}
                   disabled={!canAfford || maxed}
                   className={`
-                    px-3 py-1.5 border-4 text-[10px]
+                    min-h-[44px] px-2.5 sm:px-3 py-2 sm:py-1.5 border-2 sm:border-4 text-[8px] sm:text-[10px]
                     ${canAfford && !maxed
                       ? 'bg-solana-green text-black border-gray-800 shadow-pixel-press active:translate-x-[1px] active:translate-y-[1px] active:shadow-none'
                       : 'bg-gray-700 text-gray-500 border-gray-600 cursor-not-allowed'

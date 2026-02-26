@@ -70,7 +70,7 @@ export function ClickButton() {
   return (
     <div className="relative flex flex-col items-center justify-center mb-6">
       {/* Wrapper: room for expelled blocks to show outside button */}
-      <div className="relative w-52 h-52 md:w-60 md:h-60">
+      <div className="relative w-40 h-40 sm:w-52 sm:h-52 md:w-60 md:h-60 max-w-[min(14rem,85vw)] max-h-[min(14rem,85vw)]">
         {/* Blocks: appear at random spots on the button, expel outward, then disappear */}
         {showBlocksAround && !reducedMotion && expelBlocks.length > 0 && (
           <div className="absolute inset-0 overflow-visible pointer-events-none z-10">

@@ -155,9 +155,9 @@ export default function Home() {
       <div className="game-corner game-corner-br" aria-hidden />
       <OfflineClaimPopup />
 
-      {/* Control panel inset to fit inside corner frame (corners at 28px + 72px = 100px) */}
-      <div className="flex-1 flex flex-col min-h-0 w-full max-w-full pt-[100px] pb-[100px] px-[100px] box-border game-monitor">
-        <div className="flex-1 flex flex-col min-h-0 w-full overflow-hidden game-screen px-2 md:px-4 pb-2">
+      {/* Control panel: responsive inset so content fits on mobile and desktop */}
+      <div className="flex-1 flex flex-col min-h-0 w-full max-w-full box-border game-monitor game-monitor-padding">
+        <div className="flex-1 flex flex-col min-h-0 w-full overflow-hidden game-screen px-1 sm:px-2 md:px-4 pb-1 sm:pb-2">
           <ValidatorStatusBar />
 
           {activeTab === 'achievements' ? (
@@ -207,13 +207,13 @@ export default function Home() {
               </div>
             </div>
           ) : (
-            <div className="flex-1 grid grid-cols-1 xl:grid-cols-3 gap-3 md:gap-4 p-3 md:p-4 min-h-0 items-stretch">
+            <div className="flex-1 grid grid-cols-1 xl:grid-cols-3 gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 md:p-4 min-h-0 items-stretch overflow-auto">
               {/* Column 1: Validator Dashboard */}
               <div className="flex flex-col min-h-0">
                 <ControlPanelPanel title="VALIDATOR DASHBOARD" className="flex-1 flex flex-col min-h-0">
                   <div className="flex flex-col h-full">
                     <ResourceDisplay />
-                    <div className="flex flex-col items-center justify-center mt-4 flex-1">
+                    <div className="flex flex-col items-center justify-center mt-2 sm:mt-4 flex-1">
                       <ClickButton />
                     </div>
                   </div>
@@ -228,7 +228,7 @@ export default function Home() {
               </div>
 
               {/* Column 3: BPF Bots + Epoch */}
-              <div className="flex flex-col gap-3 md:gap-4 min-h-0">
+              <div className="flex flex-col gap-2 sm:gap-3 md:gap-4 min-h-0">
                 <ControlPanelPanel title="BPF BOTS" className="flex-[0.4] flex flex-col min-h-0">
                   <BotPanel />
                 </ControlPanelPanel>
@@ -239,15 +239,15 @@ export default function Home() {
             </div>
           )}
 
-          <nav className="game-nav px-4 md:px-6 py-2.5 flex-shrink-0">
-            <div className="flex flex-wrap justify-center gap-2 md:gap-3">
+          <nav className="game-nav px-2 sm:px-4 md:px-6 py-2 sm:py-2.5 flex-shrink-0">
+            <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 md:gap-3">
               {(['main', 'upgrades', 'automation', 'epoch', 'achievements', 'settings'] as Tab[]).map((tab) => (
                 <button
                   key={tab}
                   type="button"
                   onClick={() => setActiveTab(tab)}
                   className={`
-                    px-3 py-2 border-2 text-[10px] rounded-sm transition-all duration-200
+                    min-h-[44px] min-w-[44px] px-2.5 sm:px-3 py-2.5 sm:py-2 border-2 text-[8px] sm:text-[10px] rounded-sm transition-all duration-200
                     ${activeTab === tab
                       ? 'bg-solana-purple/90 text-white border-solana-purple game-tab-active'
                       : 'bg-gray-800/80 text-gray-400 border-gray-600 hover:bg-gray-700/80 hover:text-gray-300'
