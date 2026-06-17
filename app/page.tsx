@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useGameStore } from '@/lib/store/gameStore';
+import { isTutorialComplete } from '@/lib/tutorial/persistence';
 import { ResourceDisplay } from '@/components/game/ResourceDisplay';
 import { ClickButton } from '@/components/game/ClickButton';
 import { UpgradePanel } from '@/components/game/UpgradePanel';
@@ -9,6 +10,7 @@ import { BotPanel } from '@/components/game/BotPanel';
 import { PrestigePanel } from '@/components/game/PrestigePanel';
 import { AchievementsPanel } from '@/components/game/AchievementsPanel';
 import { OfflineClaimPopup } from '@/components/game/OfflineClaimPopup';
+import { TutorialOverlay } from '@/components/tutorial/TutorialOverlay';
 import { ValidatorStatusBar } from '@/components/game/ValidatorStatusBar';
 import { ControlPanelPanel } from '@/components/game/ControlPanelPanel';
 
@@ -24,17 +26,37 @@ const TAB_LABELS: Record<Tab, string> = {
 };
 
 export default function Home() {
-  const { load, toggleMute, toggleReducedMotion, isMuted, reducedMotion, _stopLoop } = useGameStore();
+  const { state, pendingOfflineClaim, load, toggleMute, toggleReducedMotion, isMuted, reducedMotion, _stopLoop } = useGameStore();
   const [activeTab, setActiveTab] = useState<Tab>('main');
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const [tutorialDismissed, setTutorialDismissed] = useState(false);
+  const [forceTutorial, setForceTutorial] = useState(false);
   const [homeBgBlocks, setHomeBgBlocks] = useState<{ id: number; left: number; top: number; dx: number; dy: number }[]>([]);
   const homeBlockIdRef = useRef(0);
 
   useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      setForceTutorial(new URLSearchParams(window.location.search).get('tutorial') === '1');
+    }
+  }, []);
+
+  const isNewPlayer = state.totalSlotsProcessed === 0 && state.epoch === 0;
+  const showTutorial =
+    !tutorialDismissed &&
+    !pendingOfflineClaim &&
+    (forceTutorial || (!isTutorialComplete() && isNewPlayer));
+
+  useEffect(() => {
+    if (showTutorial) {
+      setActiveTab('main');
+    }
+  }, [showTutorial]);
+
+  useEffect(() => {
     load();
     setIsLoaded(true);
-    
+
     return () => {
       _stopLoop();
     };
@@ -154,6 +176,10 @@ export default function Home() {
       <div className="game-corner game-corner-bl" aria-hidden />
       <div className="game-corner game-corner-br" aria-hidden />
       <OfflineClaimPopup />
+      <TutorialOverlay
+        isActive={showTutorial}
+        onComplete={() => setTutorialDismissed(true)}
+      />
 
       {/* On mobile: content stacks and scrolls inside main. On md+: single viewport. */}
       <div className="flex flex-col w-full max-w-full box-border game-monitor game-monitor-padding flex-1 min-h-0 overflow-hidden">
@@ -212,8 +238,13 @@ export default function Home() {
               <div className="flex flex-col md:min-h-0">
                 <ControlPanelPanel title="VALIDATOR DASHBOARD" className="flex flex-col md:flex-1 md:min-h-0">
                   <div className="flex flex-col md:h-full">
-                    <ResourceDisplay />
-                    <div className="flex flex-col items-center justify-center mt-2 sm:mt-4 md:flex-1">
+                    <div data-tutorial-target="resources">
+                      <ResourceDisplay />
+                    </div>
+                    <div
+                      data-tutorial-target="click"
+                      className="flex flex-col items-center justify-center mt-2 sm:mt-4 md:flex-1"
+                    >
                       <ClickButton />
                     </div>
                   </div>
@@ -221,7 +252,7 @@ export default function Home() {
               </div>
 
               {/* Column 2: Upgrades */}
-              <div className="flex flex-col md:min-h-0">
+              <div className="flex flex-col md:min-h-0" data-tutorial-target="upgrades">
                 <ControlPanelPanel title="UPGRADES" className="flex flex-col md:flex-1 md:min-h-0">
                   <UpgradePanel />
                 </ControlPanelPanel>
@@ -229,23 +260,30 @@ export default function Home() {
 
               {/* Column 3: BPF Bots + Epoch */}
               <div className="flex flex-col gap-2 sm:gap-3 md:gap-4 md:min-h-0">
-                <ControlPanelPanel title="BPF BOTS" className="flex flex-col md:flex-[0.4] md:min-h-0">
-                  <BotPanel />
-                </ControlPanelPanel>
-                <ControlPanelPanel title="EPOCH" className="flex flex-col md:flex-[0.6] md:min-h-0">
-                  <PrestigePanel />
-                </ControlPanelPanel>
+                <div data-tutorial-target="bots">
+                  <ControlPanelPanel title="BPF BOTS" className="flex flex-col md:flex-[0.4] md:min-h-0">
+                    <BotPanel />
+                  </ControlPanelPanel>
+                </div>
+                <div data-tutorial-target="epoch">
+                  <ControlPanelPanel title="EPOCH" className="flex flex-col md:flex-[0.6] md:min-h-0">
+                    <PrestigePanel />
+                  </ControlPanelPanel>
+                </div>
               </div>
             </div>
           )}
 
-          <nav className="game-nav px-2 sm:px-4 md:px-6 py-2 sm:py-2.5 flex-shrink-0">
+          <nav data-tutorial-target="nav" className="game-nav px-2 sm:px-4 md:px-6 py-2 sm:py-2.5 flex-shrink-0">
             <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 md:gap-3">
               {(['main', 'upgrades', 'automation', 'epoch', 'achievements', 'settings'] as Tab[]).map((tab) => (
                 <button
                   key={tab}
                   type="button"
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => {
+                    if (showTutorial) return;
+                    setActiveTab(tab);
+                  }}
                   className={`
                     min-h-[44px] min-w-[44px] px-2.5 sm:px-3 py-2.5 sm:py-2 border-2 text-[8px] sm:text-[10px] rounded-sm transition-all duration-200
                     ${activeTab === tab
@@ -264,9 +302,3 @@ export default function Home() {
     </main>
   );
 }
-
-
-
-
-
-

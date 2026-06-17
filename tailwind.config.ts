@@ -10,6 +10,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         pixel: ['"Press Start 2P"', 'monospace'],
+        tutorial: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       colors: {
         solana: {
